@@ -1,17 +1,25 @@
+#PYTHON
 from pathlib import Path
 import os
 import sys
-from decouple import config
-import pygments.formatters
+
+#CONFIG
+from settings.conf import *
+
+#FOR DEBUG
+import mimetypes
+
+
+mimetypes.add_type("application/javascript", ".js", True)
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 sys.path.append(BASE_DIR)
 sys.path.append(os.path.join(BASE_DIR, 'apps'))
 
-SECRET_KEY = config('SECRET_KEY', cast=str)
-DEBUG = config('DEBUG' , cast=bool)
-ALLOWED_HOSTS = ['*']
+CORS_ALLOW_ALL_ORIGINS = True # If this is used then `CORS_ALLOWED_ORIGINS` will not have any effect
+CORS_ALLOW_CREDENTIALS = True
 
-DJANGO_APPS = [
+DJANGO_AND_THIRD_PARTY_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -22,13 +30,21 @@ DJANGO_APPS = [
     'debug_toolbar',
     'django_extensions',
     'rest_framework',
+    'corsheaders',
 ]
+
 PROJECT_APPS = [
-    'main.apps.MainConfig',
+    'lessons.apps.LessonsConfig',
+    'auths.apps.AuthsConfig'
 ]
-INSTALLED_APPS = DJANGO_APPS + PROJECT_APPS
+
+INSTALLED_APPS = DJANGO_AND_THIRD_PARTY_APPS + PROJECT_APPS
+
+AUTH_USER_MODEL = 'auths.CustomUser'
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -36,10 +52,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'debug_toolbar.middleware.DebugToolbarMiddleware'
+    'django.middleware.common.CommonMiddleware',
 ]
-
-ROOT_URLCONF = 'settings.urls'
 
 TEMPLATES = [
     {
@@ -57,10 +71,8 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'settings.wsgi.application'
 
 
-# Database
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -69,7 +81,6 @@ DATABASES = {
 }
 
 
-# Password validation
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
@@ -85,58 +96,19 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
-# Internationalization
-LANGUAGE_CODE = 'ru'
-
-TIME_ZONE = 'Asia/Almaty'
-
-USE_I18N = True
-
-USE_TZ = True
-
-
-# Static files (CSS, JavaScript, Images)
+#STATIC
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
+#MEDIA
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-# Default primary key field type
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# SHELL_PLUS
+# #DRF
 
-SHELL_PLUS = "ipython"
-SHELL_PLUS_PRINT_SQL = True
-SHELL_PLUS_PYGMENTS_FORMATTER = pygments.formatters.TerminalFormatter
-SHELL_PLUS_PYGMENTS_FORMATTER_KWARGS = {}
-SHELL_PLUS_PRE_IMPORTS = [
-    ('django.db', ('connection', 'connections', 'reset_queries')),
-    ('datetime', ('datetime', 'timedelta', 'date')),
-    ('json', ('loads', 'dumps'))
-]
-SHELL_PLUS_MODEL_ALIASES = {
-    'main': {
-        '': '',
-    }
-}
-IPYTHON_KERNEL_DISPLAY_NAME = "Django Shell-Plus"
-#DJANGO TOOL BAR
+# REST_FRAMEWORK = {
+#     'DEFAULT_PERMISSION_CLASSES': [
+#         'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
+#     ]
+# }
 
-DEBUG_TOOLBAR_PANELS = [
-    'debug_toolbar.panels.history.HistoryPanel',
-    'debug_toolbar.panels.versions.VersionsPanel',
-    'debug_toolbar.panels.timer.TimerPanel',
-    'debug_toolbar.panels.settings.SettingsPanel',
-    'debug_toolbar.panels.headers.HeadersPanel',
-    'debug_toolbar.panels.request.RequestPanel',
-    'debug_toolbar.panels.sql.SQLPanel',
-    'debug_toolbar.panels.staticfiles.StaticFilesPanel',
-    'debug_toolbar.panels.templates.TemplatesPanel',
-    'debug_toolbar.panels.cache.CachePanel',
-    'debug_toolbar.panels.signals.SignalsPanel',
-    'debug_toolbar.panels.logging.LoggingPanel',
-    'debug_toolbar.panels.redirects.RedirectsPanel',
-    'debug_toolbar.panels.profiling.ProfilingPanel',
-]
