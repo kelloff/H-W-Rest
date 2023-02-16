@@ -1,40 +1,37 @@
 #Django
 from django.core.handlers.wsgi import WSGIRequest
-from django.contrib.auth.models import User
+from django.db.models import QuerySet
 
 #DRF
-from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework.viewsets import ViewSet
 
 #Local
+from .serializers import CarsSerializer
 from .models import Car
 
+class CarViewSet(ViewSet):
+    """Car ViewSet."""
+    
+    queryset = Car.objects.all()
+    print('--------'*10)
 
-class CarView(APIView):
-    """Car View"""
-
-
-    def get(
+    def list(
         self,
         request: WSGIRequest,
         *args,
         **kwargs
     ) -> Response:
-        cars = Car.objects.all()
-        result: list[dict[str,str]] = []
-
-        car: Car
-        for car in cars:
-            result.append({
-                "bra": car.brand,
-                "model": car.model,
-                "price": car.price,
-                'owner':car.owner.username
-            })
-            
+        cars: QuerySet[Car] = self.queryset.all()
+        serializer: CarsSerializer = CarsSerializer(
+            cars,
+            many=True
+        )
         return Response(
             {
-                "cars":result
-            },
-            status=200
+                'data':
+                {
+                    'cars': serializer.data
+                }
+            }
         )
